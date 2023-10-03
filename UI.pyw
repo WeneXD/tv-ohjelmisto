@@ -51,6 +51,7 @@ class Main(tk.Tk):
         self.im_font=font.Font(family="Javanese Text",size="12",weight="bold")
         self.alert_font=font.Font(family="KacstBook",size="8")
 
+        self.uid_vcmd=(self.register(self.userid_validate),"%P")
         self.pvmäärä_vcmd=(self.register(self.pvmäärä_validate),"%P")
         self.aika_vcmd=(self.register(self.aika_validate),"%P")
 
@@ -74,6 +75,12 @@ class Main(tk.Tk):
         frame = self.frames[page_name]
         frame.tkraise()
 
+    def userid_validate(self,P:str):
+        if len(P)==len(re.sub("[^0-9]","",P)):
+            return True
+        else:
+            return False
+
     def pvmäärä_validate(self,P:str):
         if len(P)<=10 and len(re.sub("[^0-9-]","",P))==len(P):  #Päivämäärän pitää olla koostunut vain numeroista ja viivoista sekä ei voi mennä yli 10 merkin.
             return True
@@ -95,12 +102,6 @@ class Main(tk.Tk):
         self.top.minsize(300,150)
         self.top.maxsize(300,150)
         self.top.title("ERROR")
-        
-        for x in out.keys():
-            print(x)
-
-        for x in out.values():
-            print(x)
 
         if "err" not in out.keys():
             out["err"]="Unexpected error"
@@ -137,7 +138,7 @@ class LogIn(tk.Frame):
         user_label.place(relx=0.5,rely=0.45,anchor="center")
         pword_label=tk.Label(self,text="Salasana",font=cont.log_font)
         pword_label.place(relx=0.5,rely=0.57,anchor="center")
-        self.user_entry=tk.Entry(self,justify="center")
+        self.user_entry=tk.Entry(self,justify="center",validate="key",validatecommand=self.cont.uid_vcmd)
         self.user_entry.place(relx=0.5,rely=0.5,relwidth=0.3,anchor="center")
         self.pword_entry=tk.Entry(self,show="*",justify="center")
         self.pword_entry.place(relx=0.5,rely=0.62,relwidth=0.3,anchor="center")
@@ -840,13 +841,19 @@ class Admin(tk.Frame):
         verify_pword=self.var_salasana_entry.get()
         for x in [etunimi,sukunimi]:
             if len(x)<2:
+                out={"out":False,"err":"Name too short"}
+                self.cont.error_window(out)
                 return
             
         for x in [pword,verify_pword]:
             if len(x)<6:
+                out={"out":False,"err":"Password must be over 6 characters long"}
+                self.cont.error_window(out)
                 return
 
         if pword!=verify_pword:
+            out={"out":False,"err":"Passwords don't match"}
+            self.cont.error_window(out)
             return
         
         rooli=self.rooli.get()
