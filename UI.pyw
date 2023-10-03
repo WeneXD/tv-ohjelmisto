@@ -74,19 +74,43 @@ class Main(tk.Tk):
         frame = self.frames[page_name]
         frame.tkraise()
 
-    def pvmäärä_validate(self,P):
+    def pvmäärä_validate(self,P:str):
         if len(P)<=10 and len(re.sub("[^0-9-]","",P))==len(P):  #Päivämäärän pitää olla koostunut vain numeroista ja viivoista sekä ei voi mennä yli 10 merkin.
             return True
         else:
             return False
         
-    def aika_validate(self,P):
+    def aika_validate(self,P:str):
             #Pakoittaa käyttäjän kirjoittamaan ajan muotoon hh:mm
         y=re.sub("[^0-9]","",P[:2])+re.sub("[^:]","",P[2:3])+re.sub("[^0-9]","",P[3:5])
         if len(y)==len(P) and len(P)<=5:
             return True
         else:
             return False
+        
+    def error_window(self,out:dict):
+        self.top=tk.Toplevel()
+        #self.top.protocol("WM_DELETE_WINDOW",self.close_shift_window)
+        self.top.geometry("200x150")
+        self.top.minsize(300,150)
+        self.top.maxsize(300,150)
+        self.top.title("ERROR")
+        
+        for x in out.keys():
+            print(x)
+
+        for x in out.values():
+            print(x)
+
+        if "err" not in out.keys():
+            out["err"]="Unexpected error"
+
+        self.error_label=tk.Label(self.top,text=f"Error: {out['err']}",font=self.im_font)
+        self.error_label.place(x=1,y=1)
+
+        tv_lisää_työvuoro_button=tk.Button(self.top,text="OK",command=self.top.destroy)
+        tv_lisää_työvuoro_button.place(relx=0.5,rely=0.9,anchor="center")
+
 
 class Blank(tk.Frame):
     def __init__(self,parent,cont):
@@ -222,21 +246,21 @@ class Employer(tk.Frame):
 
             #TIEDOT
         self.pvmäärä=tk.Label(self,text="Pvmäärä:")
-        self.pvmäärä.place(relx=0.195,y=60,anchor="center")
+        self.pvmäärä.place(relx=0.195,y=65,anchor="center")
         self.s_aloitus=tk.Label(self,text="Suunn. aloitus:")
-        self.s_aloitus.place(relx=0.195,y=90,anchor="center")
+        self.s_aloitus.place(relx=0.195,y=100,anchor="center")
         self.s_lopetus=tk.Label(self,text="Suunn. lopetus:")
-        self.s_lopetus.place(relx=0.195,y=120,anchor="center")
-        self.työvuoro=tk.Label(self,text="Työvuoro:")
-        self.työvuoro.place(relx=0.195,y=150,anchor="center")
+        self.s_lopetus.place(relx=0.195,y=135,anchor="center")
+        #self.työvuoro=tk.Label(self,text="Työvuoro:")
+        #self.työvuoro.place(relx=0.195,y=150,anchor="center")
         self.työtehtävä=tk.Label(self,text="Työtehtävä:")
-        self.työtehtävä.place(relx=0.195,y=180,anchor="center")
+        self.työtehtävä.place(relx=0.195,y=170,anchor="center")
         self.aloitus=tk.Label(self,text="Aloitus ajankohta:")
-        self.aloitus.place(relx=0.195,y=210,anchor="center")
+        self.aloitus.place(relx=0.195,y=205,anchor="center")
         self.lopetus=tk.Label(self,text="Lopetus ajankohta:")
         self.lopetus.place(relx=0.195,y=240,anchor="center")
-        self.ylityöt=tk.Label(self,text="Tehdyt ylityöt:")
-        self.ylityöt.place(relx=0.195,y=270,anchor="center")
+        #self.ylityöt=tk.Label(self,text="Tehdyt ylityöt:")
+        #self.ylityöt.place(relx=0.195,y=260,anchor="center")
 
 
         kommentti=tk.Label(self,text="Kirjattu kommentti:",font=cont.im_font)
@@ -357,11 +381,11 @@ class Employer(tk.Frame):
         self.pvmäärä.config(text=f"Pvmäärä: {tv_pvmäärä}")
         self.s_aloitus.config(text=f"Suunn. aloitus: {työvuoro[1]}")
         self.s_lopetus.config(text=f"Suunn. lopetus: {työvuoro[2]}")
-        self.työvuoro.config(text=f"Työvuoro: {työvuoro_tila}")
+        #self.työvuoro.config(text=f"Työvuoro: {työvuoro_tila}")
         self.työtehtävä.config(text=f"Työtehtävä: {työvuoro[5]}")
         self.aloitus.config(text=f"Aloitus ajankohta: {työvuoro[3]}")
         self.lopetus.config(text=f"Lopetus ajankohta: {työvuoro[4]}")
-        self.ylityöt.config(text=f"Tehdyt ylityöt: {työvuoro[7]}")
+        #self.ylityöt.config(text=f"Tehdyt ylityöt: {työvuoro[7]}")
         self.kommentti.config(state=tk.NORMAL)
         self.kommentti.delete("1.0","end")
         self.kommentti.insert(tk.END,työvuoro[8])
@@ -386,6 +410,7 @@ class Employer(tk.Frame):
         self.ylityöt.place(relx=0.195,y=270,anchor="center")"""
 
     def add_shift_frame(self):
+        format_color="gray"
         self.lisää_työvuoro_button.config(bg="lightgreen",fg="black")
         if self.employee==-1:
             return
@@ -412,14 +437,23 @@ class Employer(tk.Frame):
         tv_pvmäärä_label.place(relx=0.14,rely=0.225,anchor="center",height=20)
         self.tv_pvmäärä_entry=tk.Entry(self.top,validate="key",validatecommand=self.cont.pvmäärä_vcmd)
         self.tv_pvmäärä_entry.place(relx=0.400,rely=0.22,anchor="center",height=20)
+        tv_pvmäärä_format_label=tk.Label(self.top,text="(YYYY-MM-DD)",fg=format_color)
+        tv_pvmäärä_format_label.place(relx=0.68,rely=0.22,anchor="center",height=20)
+
         tv_s_aloitus_label=tk.Label(self.top,text="Suunn. aloitus:",font=im_font)
         tv_s_aloitus_label.place(relx=0.18,rely=0.325,anchor="center",height=20)
         self.tv_s_aloitus_entry=tk.Entry(self.top,justify="center",validate="key",validatecommand=self.cont.aika_vcmd)
         self.tv_s_aloitus_entry.place(relx=0.425,rely=0.32,anchor="center",height=20,width=70)
+        tv_s_aloitus_format_label=tk.Label(self.top,text="(HH:MM)",fg=format_color)
+        tv_s_aloitus_format_label.place(relx=0.6,rely=0.32,anchor="center",height=20)
+
         tv_s_lopetus_label=tk.Label(self.top,text="Suunn. lopetus:",font=im_font)
         tv_s_lopetus_label.place(relx=0.18,rely=0.425,anchor="center",height=20)
         self.tv_s_lopetus_entry=tk.Entry(self.top,justify="center",validate="key",validatecommand=self.cont.aika_vcmd)
         self.tv_s_lopetus_entry.place(relx=0.425,rely=0.42,anchor="center",height=20,width=70)
+        tv_s_lopetus_format_label=tk.Label(self.top,text="(HH:MM)",fg=format_color)
+        tv_s_lopetus_format_label.place(relx=0.6,rely=0.42,anchor="center",height=20)
+
         tv_työtehtävä_label=tk.Label(self.top,text="Työtehtävä:",font=im_font)
         tv_työtehtävä_label.place(relx=0.16,rely=0.525,anchor="center",height=20)
         self.tv_työtehtävä_entry=tk.Entry(self.top)
@@ -441,10 +475,10 @@ class Employer(tk.Frame):
 
         if out["out"]:
             self.lisää_työvuoro_button.config(bg="#000eee000",fg="#000666000")
+            self.close_shift_window()
         else:
             self.lisää_työvuoro_button.config(bg="red")
-        
-        self.close_shift_window()
+            self.cont.error_window(out)
 
     def close_shift_window(self):
         self.top.destroy()
@@ -455,11 +489,11 @@ class Employer(tk.Frame):
         self.pvmäärä.config(text=f"Pvmäärä:")
         self.s_aloitus.config(text=f"Suunn. aloitus:")
         self.s_lopetus.config(text=f"Suunn. lopetus:")
-        self.työvuoro.config(text=f"Työvuoro:")
+        #self.työvuoro.config(text=f"Työvuoro:")
         self.työtehtävä.config(text=f"Työtehtävä:")
         self.aloitus.config(text=f"Aloitus ajankohta:")
         self.lopetus.config(text=f"Lopetus ajankohta:")
-        self.ylityöt.config(text=f"Tehdyt ylityöt:")
+        #self.ylityöt.config(text=f"Tehdyt ylityöt:")
         self.kommentti.config(state=tk.NORMAL)
         self.kommentti.delete("1.0","end")
         self.kommentti.config(state=tk.DISABLED)
@@ -470,10 +504,10 @@ class Employer(tk.Frame):
             resp.raise_for_status()
         except (req.exceptions.ConnectionError,req.exceptions.Timeout):
             print("Error: Timed Out/Server down")
-            return
+            return {"out":False,"err":"Timed Out/Server down"}
         except req.exceptions.HTTPError:
             print("Error: HTTP Error")
-            return
+            return {"out":False,"err":"HTTP Error"}
         else:
             out=resp.json()
             if 'err' in out:
@@ -896,10 +930,10 @@ def request(type,link):
             resp.raise_for_status()
         except (req.exceptions.ConnectionError,req.exceptions.Timeout):
             print("Error: Timed Out/Server down")
-            return {"out":False}
+            return {"out":False,"err":"Timed Out/Server down"}
         except req.exceptions.HTTPError:
             print("Error: HTTP Error")
-            return {"out":False}
+            return {"out":False,"err":"HTTP Error"}
         else:
             out=resp.json()
             if 'err' in out:
@@ -913,10 +947,10 @@ def request(type,link):
             resp.raise_for_status()
         except (req.exceptions.ConnectionError,req.exceptions.Timeout):
             print("Error: Timed Out/Server down")
-            return {"out":False}
+            return {"out":False,"err":"Timed Out/Server down"}
         except req.exceptions.HTTPError:
             print("Error: HTTP Error")
-            return {"out":False}
+            return {"out":False,"err":"HTTP Error"}
         else:
             out=resp.json()
             if 'err' in out:
