@@ -309,14 +309,18 @@ def sql_add_shift(token,pword,K_ID,s_aloitus,s_lopetus,teht,pv):
 
     y=re.sub("[^0-9]","",pv[:4])+re.sub("[^-]","",pv[4:5])+re.sub("[^0-9]","",pv[5:7])+re.sub("[^-]","",pv[7:8])+re.sub("[^0-9]","",pv[8:10])
 
-    if len(y)!=len(pv):
-        out={"out":False,"err":"Invalid date"}
+
+    if len(y)!=len(pv) or len(pv)!=10:
+        out={"out":False,"err":"Invalid date format"}
         return out
 
-    if int(y[5:7])>12 or int(y[8:10])>31:
-        out={"out":False,"err":"Invalid date"}
+    try:
+        if int(y[5:7])>12 or int(y[8:10])>31:
+            out={"out":False,"err":"Invalid date"}
+            return out
+    except TypeError:
+        out={"out":False,"err":"Type error"}
         return out
-
 
     out=sql.add_shift(K_ID,s_aloitus,s_lopetus,teht,pv)
 
