@@ -76,6 +76,8 @@ class Main(tk.Tk):
         frame.tkraise()
 
     def userid_validate(self,P:str):
+        if P[:1]=="@":
+            return True
         if len(P)==len(re.sub("[^0-9]","",P)):
             return True
         else:
